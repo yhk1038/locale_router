@@ -24,7 +24,11 @@ module LocaleRouter
           set_locale_over_access_header
         end
 
-        set_locale_from_inline_param if locale_params
+        if valid_locale_params?
+          set_locale_from_inline_param
+        else
+          set_locale_from_default_locale
+        end
       end
     end
 
@@ -69,6 +73,10 @@ module LocaleRouter
     def set_locale_from_inline_param
       I18n.locale = locale_params
       logger.debug "* Locale reset to '#{I18n.locale}' from inline parameters".yellow
+    end
+
+    def set_locale_from_default_locale
+      set_locale_over_access_header
     end
   end
 end
