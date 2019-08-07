@@ -19,9 +19,14 @@ module LocaleRouter
 
   module ActionDispatch::Routing
     class Mapper
-      def locale_detect
+      def locale_detect(root: nil)
         regexp = LocaleRouter.config.available_locales_regexp
         scope '(/:locale)', locale: regexp do
+          if root
+            LocaleRouter.config.available_locales.each do |locale|
+              match "/#{locale}", to: root, via: :get, defaults: { locale: locale.to_s }
+            end
+          end
           yield
         end
       end
