@@ -88,7 +88,7 @@ module LocaleRouter
       @load_path ||= 'config/locales/**/*.{rb,yml}'
     end
 
-    # => Option :locale_param_check_type
+    # => Option :locale_param_matcher
     #
     # 이 옵션은 `params[:locale]` 로 인식된 문자열에 대하여 신뢰성을 검사하는 방법을
     # 지정합니다. 이 옵션이 `:strong` 심볼이 설정 된 경우, +강타입+ 검사를 실행하며,
@@ -115,33 +115,19 @@ module LocaleRouter
     # recommended that you use it only in 'non-production environments'.
     #
     #
-    #   config.locale_param_check_type = :string (default) or :week
+    #   config.locale_param_matcher = :string (default)
     #
+    #   Value         |   Pattern
+    #   --------------|-----------------
+    #   :string       |   available_locales.map(&:to_s).join('|')     # e.g. /ko|en|th/
+    #   :week         |   '((?!\/).)*'                                # Strongly purpose DON'T USE on production environment
+    #   YOUR_REGEX    |   /YOUR_REGEX/
     #
-    attr_writer :locale_param_check_type
-    def locale_param_check_type
-      @locale_param_check_type ||= :strong
-    end
-
-    # => Option :undefined_slug_match
+    #   # => scope '(:locale)', locale: Pattern do ... end
     #
-    # 이 옵션은 `params[:locale]` 에서 미리 정의되지 않은 문자열이 인식된 경우
-    # 접근을 허용할 수 있도록 하는 대체 문자열 패턴(regex)을 지정합니다.
-    # 이 옵션은 `:locale_param_check_type` 에서 설정된 방법보다 우선하여 적용됩니다.
-    #
-    # This option set an additional string pattern(regex) to allow access
-    # if an undefined string is recognized in `params[:locale]`.
-    # This option overrides the method set by `:locale_param_check_type`.
-    #
-    #
-    #   config.undefined_slug_match = '.*' (default is nil)
-    #
-    #   # => scope '(:locale)', locale: /.*/ do ... end
-    #
-    #
-    attr_writer :undefined_slug_match
-    def undefined_slug_match
-      @undefined_slug_match ||= nil
+    attr_writer :locale_param_matcher
+    def locale_param_matcher
+      @locale_param_matcher ||= :strong
     end
 
     # protected
@@ -151,21 +137,27 @@ module LocaleRouter
     end
 
     def available_locales_regexp
-      Regexp.new(regexp_conditions_for_param)
+      regexp_conditions_for_param.is_a?(String) ?
+        Regexp.new(regexp_conditions_for_param) :
+        regexp_conditions_for_param
     end
 
     private
 
     def regexp_conditions_for_param
-      return undefined_slug_match if undefined_slug_match
+      strong_matcher = available_locales.map(&:to_s).join('|')
 
-      case locale_param_check_type
+      case locale_param_matcher
       when :strong
-        available_locales.map(&:to_s).join('|')
+        strong_matcher
       when :week
         '((?!\/).)*'
       else
-        available_locales.map(&:to_s).join('|')
+        if [String, Regexp].include? locale_param_matcher.class
+          locale_param_matcher
+        else
+          strong_matcher
+        end
       end
     end
   end
