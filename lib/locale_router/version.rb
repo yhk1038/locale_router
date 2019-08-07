@@ -1,5 +1,5 @@
 module LocaleRouter
-  VERSION = '0.6.5'
+  VERSION = '0.7.0'
 end
 
 =begin
@@ -10,4 +10,5 @@ end
 0.4.x - Access-Header follow control (option/ :with_access_header)
 0.5.x - auto_prepend_before_action
 0.6.x - Thread safe
+0.7.x - undefined string recognized in locale param
 =end
