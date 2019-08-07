@@ -21,7 +21,7 @@ module LocaleRouter
     class Mapper
       def locale_detect
         regexp = LocaleRouter.config.available_locales_regexp
-        scope '(:locale)', locale: regexp do
+        scope '(/:locale)', locale: regexp do
           yield
         end
       end
