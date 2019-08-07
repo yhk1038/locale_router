@@ -88,6 +88,23 @@ module LocaleRouter
       @load_path ||= 'config/locales/**/*.{rb,yml}'
     end
 
+    # => Option :undefined_slug_match
+    #
+    # 이 옵션은 `params[:locale]` 에서 미리 정의되지 않은 문자열이 인식된 경우
+    # 접근을 허용할 수 있는 추가적인 문자열 패턴(regex)을 지정합니다.
+    #
+    # This option set an additional string pattern(regex) to allow access
+    # if an undefined string is recognized in `params[:locale]`.
+    #
+    #
+    #   config.undefined_slug_match = '.*' (default)
+    #
+    #
+    attr_writer :undefined_slug_match
+    def undefined_slug_match
+      @undefined_slug_match ||= '.*'
+    end
+
     # protected
 
     def locale_dir(root)
@@ -95,7 +112,13 @@ module LocaleRouter
     end
 
     def available_locales_regexp
-      Regexp.new(available_locales.map(&:to_s).join('|'))
+      Regexp.new(regexp_conditions_for_param.join('|'))
+    end
+
+    private
+
+    def regexp_conditions_for_param
+      available_locales.map(&:to_s) << undefined_slug_match
     end
   end
 end
