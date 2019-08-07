@@ -21,14 +21,10 @@ module LocaleRouter
         if LocaleRouter.config.auto_follow_access_header
           set_locale_with_access_header
         else
-          set_locale_over_access_header
+          set_locale_configured_default
         end
 
-        if valid_locale_params?
-          set_locale_from_inline_param
-        else
-          set_locale_from_default_locale
-        end
+        set_locale_from_inline_param if valid_locale_params?
       end
     end
 
@@ -65,7 +61,7 @@ module LocaleRouter
       logger.debug "* Locale reset to '#{I18n.locale}' from Access-Header".yellow
     end
 
-    def set_locale_over_access_header
+    def set_locale_configured_default
       I18n.locale = I18n.default_locale
       logger.debug "* Locale reset to '#{I18n.locale}' from default locale config".yellow
     end
@@ -73,10 +69,6 @@ module LocaleRouter
     def set_locale_from_inline_param
       I18n.locale = locale_params
       logger.debug "* Locale reset to '#{I18n.locale}' from inline parameters".yellow
-    end
-
-    def set_locale_from_default_locale
-      set_locale_over_access_header
     end
   end
 end
