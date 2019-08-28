@@ -13,7 +13,9 @@ module LocaleRouter
   class Error < StandardError; end
 
   def self.included(base)
-    base.send :include, ::HttpAcceptLanguage::AutoLocale
+    if LocaleRouter.config.auto_follow_access_header
+      base.send :include, ::HttpAcceptLanguage::AutoLocale
+    end
     base.send :include, LocaleRouter::Checker
     base.send :include, LocaleRouter::Context
   end
